@@ -133,10 +133,11 @@ function setupUI(canvasElement) {
 } // end setupUI
 
 function loop() {
-    /* NOTE: This is temporary testing code that we will delete in Part II */
     requestAnimationFrame(loop);
     
     canvas.draw(drawParams);
+
+    
 
 }
 

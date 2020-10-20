@@ -42,5 +42,6 @@ export {
   makeColor,
   getRandomColor,
   getLinearGradient,
-  goFullscreen
+  goFullscreen,
+  getRandom
 };
