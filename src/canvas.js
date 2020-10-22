@@ -7,33 +7,54 @@
 	  - maybe a better name for this file/module would be *visualizer.js* ?
 */
 
+import {
+    audioCtx
+} from './audio.js';
 import * as utils from './utils.js';
 
 let ctx, canvasWidth, canvasHeight, gradient, analyserNode, audioData;
 
+class Ball {
+    constructor(startX, startY, color, radius, dy, dx) {
+        this.startX = startX;
+        this.startY = startY;
+        this.color = color;
+        this.radius = radius;
+        this.dy = dy;
+        this.dx = dx;
+    }
+}
+
+function drawImageRot(x,y,width,height,deg,color){
+    // Store the current context state (i.e. rotation, translation etc..)
+    ctx.save()
+  
+    //Convert degrees to radian 
+    var rad = deg * Math.PI / 180;
+  
+    //Set the origin to the center of the image
+    ctx.translate(x + width / 2, y + height / 2);
+  
+    //Rotate the canvas around the origin
+    ctx.rotate(rad);
+  
+    ctx.fillStyle = color;
+    //draw the image    
+    ctx.fillRect(width / 2 * (-1),height / 2 * (-1),width,height);
+  
+    // Restore canvas state as saved from above
+    ctx.restore();
+}
+
+
+//customizeable variables
+let ballCount = 30;
+
+
 //declaring variables for my moving stuff
-let ballX = 100;
-let ballY = 100;
 let balls = [];
-balls.push({startX: 10,  startY: 10,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 100, startY: 100, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 50,  startY: 50,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 200, startY: 200, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 400, startY: 400, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 10,  startY: 10,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 100, startY: 100, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 50,  startY: 50,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 200, startY: 200, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 400, startY: 400, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 100, startY: 100, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 50,  startY: 50,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 200, startY: 200, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 400, startY: 400, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 10,  startY: 10,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 100, startY: 100, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 50,  startY: 50,  color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 200, startY: 200, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
-balls.push({startX: 400, startY: 400, color: utils.getRandomColor(), radius: utils.getRandom(1,20), dy: utils.getRandom(1,30), dx: utils.getRandom(1,30)})
+let spawnBallsYet = false;
+
 
 function setupCanvas(canvasElement, analyserNodeRef) {
     // create drawing context
@@ -83,9 +104,21 @@ function draw(params = {}) {
         ctx.fillStyle = gradient;
         ctx.globalAlpha = 0.3;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        
         ctx.restore();
-        console.log("inside;");
     }
+
+    // if(params.showBars) {
+    //     let barSpacing = 4,
+    //         barWidth = canvasWidth / 20,
+    //         barHeight = 350,
+    //         degrees = 0;
+
+    //     for(let i = 0; i < audioData.length; i ++){
+
+    //     }
+        
+    // }
 
     // 4 - draw bars
     if (params.showBars) {
@@ -94,59 +127,62 @@ function draw(params = {}) {
         let screenWidthForBars = canvasWidth - (audioData.length * barSpacing) - margin * 2;
         let barWidth = screenWidthForBars / audioData.length;
         let barHeight = 350;
-        let topSpacing = 100;
+        let topSpacing = 75;
+        let degrees = 0;
+        let increase = 1;
 
         ctx.save();
 
         //loop through the data and draw
 
-        for (let i = 0; i < audioData.length ; i++) {
-            
-            if(i % 2 === 0){
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.strokeStyle = `rgba(255,100,255,0.5)`;
-            }
-            else{
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.strokeStyle = `rgba(0, 126, 255, 0.5)`;
-            }
+        for (let i = 0; i < audioData.length; i++) {
 
-            ctx.fillRect(margin + i * (barWidth + barSpacing), topSpacing + 256 - audioData[i], barWidth, barHeight);
-            ctx.strokeRect(margin + i * (barWidth + barSpacing), topSpacing + 250 - audioData[i], barWidth, barHeight);
+            // if (i % 2 === 0) {
+            //     ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            //     ctx.strokeStyle = `rgba(255,100,255,0.5)`;
+            // } else {
+            //     ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            //     ctx.strokeStyle = `rgba(0, 126, 255, 0.5)`;
+            // }
+            
+
+            // ctx.fillRect(margin + i * (barWidth + barSpacing), 0, barWidth, audioData[i]);
+            drawImageRot(canvasWidth/2,canvasHeight/2,barWidth, audioData[i],degrees += increase,"black");
+            // ctx.strokeRect(margin + i * (barWidth + barSpacing), 0, barWidth, audioData[i]);
         }
         ctx.restore;
     }
 
-    // 5 - draw circles
-    if (params.showCircles) {
-        let maxRadius = canvasHeight / 3;
-        ctx.save();
-        ctx.globalAlpha = 0.5;
+    // // 5 - draw circles
+    // if (params.showCircles) {
+    //     let maxRadius = canvasHeight / 3;
+    //     ctx.save();
+    //     ctx.globalAlpha = 0.5;
 
-        for (let i = 0; i < audioData.length; i++) {
-            let percent = audioData[i] / 255;
+    //     for (let i = 0; i < audioData.length; i++) {
+    //         let percent = audioData[i] / 255;
 
-            let circleRadius = percent * maxRadius;
-            ctx.beginPath();
-            ctx.fillStyle = utils.makeColor(0, 255, 0, .34 - percent / 3.0);
-            ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius, 0, 2 * Math.PI, false);
-            ctx.fill();
-            ctx.closePath();
+    //         let circleRadius = percent * maxRadius;
+    //         ctx.beginPath();
+    //         ctx.fillStyle = utils.makeColor(0, 255, 0, .34 - percent / 3.0);
+    //         ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius, 0, 2 * Math.PI, false);
+    //         ctx.fill();
+    //         ctx.closePath();
 
-            ctx.beginPath();
-            ctx.fillStyle = utils.makeColor(0, 255, 255, .10 - percent / 10.0);
-            ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius * 1.5, 0, 2 * Math.PI, false);
-            ctx.fill();
-            ctx.closePath();
+    //         ctx.beginPath();
+    //         ctx.fillStyle = utils.makeColor(0, 255, 255, .10 - percent / 10.0);
+    //         ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius * 1.5, 0, 2 * Math.PI, false);
+    //         ctx.fill();
+    //         ctx.closePath();
 
-            ctx.beginPath();
-            ctx.fillStyle = utils.makeColor(120, 120, 255, .5 - percent / 5.0);
-            ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius * .75, 0, 2 * Math.PI, false);
-            ctx.fill();
-            ctx.closePath();
-        }
-        ctx.restore();
-    }
+    //         ctx.beginPath();
+    //         ctx.fillStyle = utils.makeColor(120, 120, 255, .5 - percent / 5.0);
+    //         ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius * .75, 0, 2 * Math.PI, false);
+    //         ctx.fill();
+    //         ctx.closePath();
+    //     }
+    //     ctx.restore();
+    // }
 
 
     // 6 - bitmap manipulation
@@ -184,35 +220,39 @@ function draw(params = {}) {
             let red = data[i],
                 green = data[i + 1],
                 blue = data[i + 2];
-    
+
             data[i] = 255 - red;
             data[i + 1] = 255 - green;
             data[i + 2] = 255 - blue;
         }
     } // end for
 
-    
-
-    if (params.showEmboss) {
-        console.log("inside showemboss");
-        for (let i = 0; i < length; i++) {
-            if (i % 4 == 3) continue; 
-            else{data[i] = 127 + 2 * data[i] - data[i + 4] - data[i + width * 4]};
-        }
-    }
-
-    // if (params.showCrazy) {
-
+    // if (params.showEmboss) {
+    //     console.log("inside showemboss");
+    //     for (let i = 0; i < length; i++) {
+    //         if (i % 4 == 3) continue; 
+    //         else{data[i] = 127 + 2 * data[i] - data[i + 4] - data[i + width * 4]};
     //     }
     // }
 
-    ctx.putImageData(imageData, 0, 0);
+    // ctx.putImageData(imageData, 0, 0);
 
     // D) copy image data back to canvas
-    
-    if (params.showCrazy) { 
-        for (let i = 0; i < balls.length; i++){
-           
+
+    // showballs
+    if (params.showBalls) {
+
+        if (!spawnBallsYet) {
+            for (let i = 0; i < ballCount; i++) {
+                let ball = new Ball(utils.getRandom(0, canvasWidth), utils.getRandom(0, canvasHeight), utils.getRandomColor(), utils.getRandom(5, 20), utils.getRandom(-30, 30), utils.getRandom(-30, 30));
+                balls.push(ball);
+            }
+            spawnBallsYet = true;
+        }
+
+
+        for (let i = 0; i < balls.length; i++) {
+
             ctx.save();
             ctx.beginPath();
 
@@ -224,24 +264,15 @@ function draw(params = {}) {
             ctx.fillStyle = ball.color;
             ctx.arc(ball.startX, ball.startY, ball.radius, 0, Math.PI * 2, true);
 
-            if( ball.startX < 0 || ball.startX > canvasWidth) ball.dx=-ball.dx; 
-            if( ball.startY < 0 || ball.startY > canvasHeight) ball.dy=-ball.dy; 
-            
+            if (ball.startX < 0 || ball.startX > canvasWidth) ball.dx = -ball.dx;
+            if (ball.startY < 0 || ball.startY > canvasHeight) ball.dy = -ball.dy;
+
             ctx.closePath();
             ctx.fill();
             ctx.restore();
 
         }
-        // making a wall in the canvas
-        // if( ballX<0 || ballX>canvasWidth) dX=-dX; 
-        // if( ballY<0 || ballY>canvasHeight) dY=-dY; 
-        // ballX += dX;
-        // ballY += dY;
     }
-
-    
-
-    
 }
 
 

@@ -16,13 +16,13 @@ const DEFAULTS = Object.freeze({
 });
 
 let drawParams = {
-    showGradient: false,
-    showBars: false,
+    showGradient: true,
+    showBars: true,
     showCircles: false,
     showNoise: false,
     showInvert: false,
     showEmboss: false,
-    showCrazy: false
+    showBalls: false
 };
 
 function init() {
@@ -99,7 +99,7 @@ function setupUI(canvasElement) {
     document.querySelector('#noiseCB').checked = drawParams.showNoise;
     document.querySelector('#invertCB').checked = drawParams.showInvert;
     document.querySelector('#embossCB').checked = drawParams.showEmboss;
-    document.querySelector('#crazyCB').checked = drawParams.showCrazy;
+    document.querySelector('#ballsCB').checked = drawParams.showCrazy;
 
     document.querySelector('#gradientCB').onchange = e => {
         drawParams.showGradient = e.target.checked;
@@ -125,8 +125,8 @@ function setupUI(canvasElement) {
         drawParams.showEmboss = e.target.checked;
     }
 
-    document.querySelector('#crazyCB').onchange = e => {
-        drawParams.showCrazy = e.target.checked;
+    document.querySelector('#ballsCB').onchange = e => {
+        drawParams.showBalls = e.target.checked;
     }
 
 
@@ -137,7 +137,7 @@ function loop() {
     
     canvas.draw(drawParams);
 
-    
+
 
 }
 

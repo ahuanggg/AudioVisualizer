@@ -25,6 +25,8 @@ const getLinearGradient = (ctx, startX, startY, endX, endY, colorStops) => {
 };
 
 
+
+
 const goFullscreen = (element) => {
   if (element.requestFullscreen) {
     element.requestFullscreen();
@@ -44,4 +46,5 @@ export {
   getLinearGradient,
   goFullscreen,
   getRandom
+
 };
