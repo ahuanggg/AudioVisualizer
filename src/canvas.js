@@ -11,6 +11,7 @@ import {
     audioCtx
 } from './audio.js';
 import * as utils from './utils.js';
+import * as main from './main.js';
 
 let ctx, canvasWidth, canvasHeight, gradient, analyserNode, audioData;
 
@@ -25,35 +26,73 @@ class Ball {
     }
 }
 
-function drawImageRot(x,y,width,height,deg,color){
-    // Store the current context state (i.e. rotation, translation etc..)
-    ctx.save()
-  
-    //Convert degrees to radian 
-    var rad = deg * Math.PI / 180;
-  
-    //Set the origin to the center of the image
-    ctx.translate(x + width / 2, y + height / 2);
-  
-    //Rotate the canvas around the origin
-    ctx.rotate(rad);
-  
-    ctx.fillStyle = color;
-    //draw the image    
-    ctx.fillRect(width / 2 * (-1),height / 2 * (-1),width,height);
-  
-    // Restore canvas state as saved from above
-    ctx.restore();
+class Particle {
+    constructor(x,y,directionX,directionY,size,color){
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+        this.color = color;
+    }
+    draw() { //draw the particle
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, true);
+        ctx.fillStyle = "#59F9B5";
+        ctx.fill();
+    }
+    update() { //check if the mouse is hitting the particle
+        if(this.x > canvasWidth || this.x < 0){
+            this.directionX = -this.directionX;
+        }
+        if(this.y > canvasHeight || this.y < 0){
+            this.directionY = -this.directionY;
+        }
+        let dx = main.mouse.x - this.x;
+        let dy = main.mouse.y - this.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < main.mouse.radius + this.size){
+            if(main.mouse.x < this.x && this.x < canvasWidth - this.size * 10){
+                this.x += 10;
+            }
+            if(main.mouse.x > this.x && this.x > this.size * 10){
+                this.x -= 10;
+            }
+            if(main.mouse.y < this.y && this.y < canvasHeight - this.size * 10){
+                this.y += 10;
+            }
+            if(main.mouse.y > this.y && this.y > this.size * 10){
+                this.y -= 10;
+            }
+
+        }
+        this.x += this.directionX;
+        this.y += this.directionY;
+
+        this.draw();
+    }
 }
+
+let particles = [];
+
+let madeParticle = true;
 
 
 //customizeable variables
 let ballCount = 30;
+let pulseTime = 2500;
+let numofparticles = 100;
 
 
 //declaring variables for my moving stuff
 let balls = [];
 let spawnBallsYet = false;
+let pulseCount = 0;
+let pulseFirstTime = true;
+
+//variables for the bar circle
+let degrees = 0;
+let increase = 1;
 
 
 function setupCanvas(canvasElement, analyserNodeRef) {
@@ -84,7 +123,7 @@ function setupCanvas(canvasElement, analyserNodeRef) {
     audioData = new Uint8Array(analyserNode.fftSize / 2);
 }
 
-function draw(params = {}) {
+function draw(params = {}, mouse = {}) {
     // 1 - populate the audioData array with the frequency data from the analyserNode
     // notice these arrays are passed "by reference" 
     analyserNode.getByteFrequencyData(audioData);
@@ -104,7 +143,7 @@ function draw(params = {}) {
         ctx.fillStyle = gradient;
         ctx.globalAlpha = 0.3;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        
+
         ctx.restore();
     }
 
@@ -117,7 +156,7 @@ function draw(params = {}) {
     //     for(let i = 0; i < audioData.length; i ++){
 
     //     }
-        
+
     // }
 
     // 4 - draw bars
@@ -125,64 +164,106 @@ function draw(params = {}) {
         let barSpacing = 4;
         let margin = 5;
         let screenWidthForBars = canvasWidth - (audioData.length * barSpacing) - margin * 2;
-        let barWidth = screenWidthForBars / audioData.length;
+        let barWidth = screenWidthForBars / 20;
         let barHeight = 350;
         let topSpacing = 75;
-        let degrees = 0;
-        let increase = 1;
+        let radius = 100;
+
 
         ctx.save();
 
         //loop through the data and draw
-
         for (let i = 0; i < audioData.length; i++) {
 
-            // if (i % 2 === 0) {
-            //     ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            //     ctx.strokeStyle = `rgba(255,100,255,0.5)`;
-            // } else {
-            //     ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            //     ctx.strokeStyle = `rgba(0, 126, 255, 0.5)`;
-            // }
-            
+            if (i % 2 === 0) {
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.strokeStyle = `rgba(255,100,255,0.5)`;
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.strokeStyle = `rgba(0, 126, 255, 0.5)`;
+            }
+
+
+            let radians = utils.degreesToRadians(degrees);
+            degrees += increase;
+            if (degrees === 360) {
+                degrees = 0;
+            }
+
+            let circleX = canvasWidth / 2 + radius * Math.cos(radians);
+            let circleY = canvasHeight / 2 + radius * Math.sin(radians);
+            // ctx.beginPath();
+            // ctx.arc(circleX, circleY, 2,0,Math.PI*2,true);
+            // ctx.fill();
+            // ctx.closePath();
+
+
+
+            ctx.fillRect(circleX, circleY, barWidth, audioData[i]);
+            ctx.strokeRect(circleX, circleY, barWidth, audioData[i]);
+            ctx.translate(canvasWidth / 2, canvasHeight / 2);
+            ctx.rotate(Math.PI / 4);
+            ctx.translate(-canvasWidth / 2, -canvasHeight / 2);
+
 
             // ctx.fillRect(margin + i * (barWidth + barSpacing), 0, barWidth, audioData[i]);
-            drawImageRot(canvasWidth/2,canvasHeight/2,barWidth, audioData[i],degrees += increase,"black");
             // ctx.strokeRect(margin + i * (barWidth + barSpacing), 0, barWidth, audioData[i]);
         }
-        ctx.restore;
+        ctx.restore();
+    }
+
+
+    if (params.showPulse) {
+
+        // let i;
+        // ctx.save();
+        // for (i = 0; i < audioData.length; i++) {
+            
+        // }
+
+
+        // ctx.restore();
     }
 
     // // 5 - draw circles
-    // if (params.showCircles) {
-    //     let maxRadius = canvasHeight / 3;
-    //     ctx.save();
-    //     ctx.globalAlpha = 0.5;
+    if (params.showCircles) {
+        
+        if(madeParticle){
+            for(let i = 0; i < numofparticles; i++){
+            
+                let size = utils.getRandom(1,5);
+                let x = utils.getRandom(0,canvasWidth -10);
+                let y = utils.getRandom(0, canvasHeight -10);
+                let directionX = utils.getRandom(0,2.5);
+                let directionY = utils.getRandom(0,2.5);
+                let color = "#59F9B5"
 
-    //     for (let i = 0; i < audioData.length; i++) {
-    //         let percent = audioData[i] / 255;
+                particles.push(new Particle(x,y,directionX,directionY,size,color));
+            }
+            madeParticle = false;
+        }
+    
+        
 
-    //         let circleRadius = percent * maxRadius;
-    //         ctx.beginPath();
-    //         ctx.fillStyle = utils.makeColor(0, 255, 0, .34 - percent / 3.0);
-    //         ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius, 0, 2 * Math.PI, false);
-    //         ctx.fill();
-    //         ctx.closePath();
+        for(let i = 0; i < particles.length; i++){
+            particles[i].update();
+        }
 
-    //         ctx.beginPath();
-    //         ctx.fillStyle = utils.makeColor(0, 255, 255, .10 - percent / 10.0);
-    //         ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius * 1.5, 0, 2 * Math.PI, false);
-    //         ctx.fill();
-    //         ctx.closePath();
+        for(let a = 0; a <particles.length; a++){
+            for(let b = 0; b < particles.length; b++){
+                let dist = (Math.pow((particles[a].x - particles[b].x),2)) + (Math.pow((particles[a].y - particles[b].y),2));
+                if(dist < (canvasWidth / 7 * canvasHeight/7)) {
+                    ctx.strokeStyle = "rgba(55,186,130,1)";
+                    ctx.beginPath();
+                    ctx.moveTo(particles[a].x, particles[a].y);
+                    ctx.lineTo(particles[b].x, particles[b].y);
+                    ctx.stroke();
+                }
+            }
+        }
 
-    //         ctx.beginPath();
-    //         ctx.fillStyle = utils.makeColor(120, 120, 255, .5 - percent / 5.0);
-    //         ctx.arc(canvasWidth / 2, canvasHeight / 2, circleRadius * .75, 0, 2 * Math.PI, false);
-    //         ctx.fill();
-    //         ctx.closePath();
-    //     }
-    //     ctx.restore();
-    // }
+
+    }
 
 
     // 6 - bitmap manipulation

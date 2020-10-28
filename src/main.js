@@ -12,18 +12,24 @@ import * as canvas from './canvas.js';
 
 // 1 - here we are faking an enumeration
 const DEFAULTS = Object.freeze({
-    sound1: "media/New Adventure Theme.mp3"
+    sound1: "media/Shelter.mp3"
 });
 
 let drawParams = {
     showGradient: true,
     showBars: true,
-    showCircles: false,
+    showCircles: true,
     showNoise: false,
     showInvert: false,
-    showEmboss: false,
+    showPulse: false,
     showBalls: false
 };
+
+let mouse = {
+    x: null,
+    y: null,
+    radius: 50
+}
 
 function init() {
     console.log("init called");
@@ -98,7 +104,7 @@ function setupUI(canvasElement) {
     document.querySelector('#circlesCB').checked = drawParams.showCircles;
     document.querySelector('#noiseCB').checked = drawParams.showNoise;
     document.querySelector('#invertCB').checked = drawParams.showInvert;
-    document.querySelector('#embossCB').checked = drawParams.showEmboss;
+    document.querySelector('#pulseCB').checked = drawParams.showPulse;
     document.querySelector('#ballsCB').checked = drawParams.showCrazy;
 
     document.querySelector('#gradientCB').onchange = e => {
@@ -121,13 +127,20 @@ function setupUI(canvasElement) {
         drawParams.showInvert = e.target.checked;
     }
 
-    document.querySelector('#embossCB').onchange = e => {
-        drawParams.showEmboss = e.target.checked;
+    document.querySelector('#pulseCB').onchange = e => {
+        drawParams.showPulse = e.target.checked;
     }
 
     document.querySelector('#ballsCB').onchange = e => {
         drawParams.showBalls = e.target.checked;
     }
+
+    window.addEventListener("mousemove",
+        function(event){
+            mouse.x = event.x;
+            mouse.y = event.y;
+        }
+    )
 
 
 } // end setupUI
@@ -135,12 +148,13 @@ function setupUI(canvasElement) {
 function loop() {
     requestAnimationFrame(loop);
     
-    canvas.draw(drawParams);
+    canvas.draw(drawParams,mouse);
 
 
 
 }
 
 export {
-    init
+    init,
+    mouse
 };

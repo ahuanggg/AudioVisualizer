@@ -11,7 +11,7 @@ const getRandom = (min, max) => {
 };
 
 const getRandomColor = () => {
-  const floor = 35; // so that colors are not too bright or too dark 
+  const floor = 25; // so that colors are not too bright or too dark 
   const getByte = () => getRandom(floor, 255 - floor);
   return `rgba(${getByte()},${getByte()},${getByte()},1)`;
 };
@@ -24,6 +24,10 @@ const getLinearGradient = (ctx, startX, startY, endX, endY, colorStops) => {
   return lg;
 };
 
+const degreesToRadians = (degrees) => {
+  let pi = Math.PI;
+  return degrees * (pi/180);
+}
 
 
 
@@ -45,6 +49,7 @@ export {
   getRandomColor,
   getLinearGradient,
   goFullscreen,
-  getRandom
+  getRandom,
+  degreesToRadians
 
 };
