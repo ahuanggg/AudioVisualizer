@@ -3,12 +3,13 @@ let audioCtx;
 
 // **These are "private" properties - these will NOT be visible outside of this module (i.e. file)**
 // 2 - WebAudio nodes that are part of our WebAudio audio routing graph
-let element, sourceNode, analyserNode, gainNode;
+let element, sourceNode, analyserNode, gainNode, filter, duration, time;
 
 // 3 - here we are faking an enumeration
 const DEFAULTS = Object.freeze({
     gain: .5,
-    numSamples: 256
+    numSamples: 256,
+    lowpass: 800
 });
 
 // 4 - create a new array of 8-bit integers (0-255)
@@ -24,6 +25,9 @@ function setupWebaudio(filePath) {
     // 2 - this creates an <audio> element
     element = new Audio();
 
+    duration = element.duration;
+    time = element.currentTime;
+    
     // 3 - have it point at a sound file
     loadSoundFile(filePath);
 
@@ -46,12 +50,18 @@ function setupWebaudio(filePath) {
     // fft stands for Fast Fourier Transform
     analyserNode.fftSize = DEFAULTS.numSamples;
 
+    filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = DEFAULTS.lowpass;
+    
+
     // 7 - create a gain (volume) node
     gainNode = audioCtx.createGain();
     gainNode.gain.value = DEFAULTS.gain;
 
     // 8 - connect the nodes - we now have an audio graph
-    sourceNode.connect(analyserNode);
+    sourceNode.connect(filter);
+    filter.connect(analyserNode);
     analyserNode.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 }
@@ -73,6 +83,11 @@ function setVolume(value) {
     gainNode.gain.value = value;
 }
 
+function setlowpass(value) {
+    value = Number(value);
+    filter.frequency.value = value;
+}
+
 export {
     audioCtx,
     setupWebaudio,
@@ -80,5 +95,9 @@ export {
     pauseCurrentSound,
     loadSoundFile,
     setVolume,
-    analyserNode
+    setlowpass,
+    analyserNode,
+    duration,
+    time,
+    element
 };

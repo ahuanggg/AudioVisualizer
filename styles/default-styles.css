@@ -1,6 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
 body {
-	background: #eeeeee;
-	font-family: tahoma, verdana, sans serif;
+	background: #c6f6ff;
+	font-family: 'Roboto', sans-serif;
+}
+
+#controls{
+  float:right;
+  padding-right: 4em;
+  padding-top: 5em;
 }
 
 canvas {
@@ -8,7 +15,7 @@ canvas {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
 	box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-	background: #fafafa;
+	background: #6b6464;
 }
 
 #controls{
@@ -25,7 +32,8 @@ section{
 
 #playButton{
   font-size: 1.2rem;
-  width: 6rem;
+  width: 8rem;
+  font-family: 'Roboto', sans-serif;
 }
 
 button[data-playing="yes"]:after{
@@ -37,6 +45,12 @@ button[data-playing="no"]:after{
 }
 
 #fsButton{
-  font-size: 1.2rem;
+  font-size: 1.2rem; 
   width: 8rem;
+  font-family: 'Roboto', sans-serif;
+  
+}
+
+#trackselect{
+  font-family: 'Roboto', sans-serif;
 }

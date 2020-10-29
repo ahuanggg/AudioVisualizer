@@ -11,10 +11,16 @@ const getRandom = (min, max) => {
 };
 
 const getRandomColor = () => {
-  const floor = 25; // so that colors are not too bright or too dark 
-  const getByte = () => getRandom(floor, 255 - floor);
+  const floor = 0; // so that colors are not too bright or too dark 
+  const getByte = () => getRandom(floor, 255);
   return `rgba(${getByte()},${getByte()},${getByte()},1)`;
 };
+
+const getRandomNeon = () => {
+  let colors = ["#FFFF00", "#FFFF33", "#F2EA02", "#E6FB04","#FF0000", "#FD1C03", "#FF3300", "#FF6600", "#00FF00","#00FF33","#00FF66","#33FF00","#00FFFF","#099FFF","#0062FF","#0033FF","#FF00FF","#FF00CC","#FF0099","#CC00FF","#9D00FF","#CC00FF","#6E0DD0","#9900FF"];
+  let index = Math.floor(getRandom(0, colors.length - 1));
+  return colors[index];
+}
 
 const getLinearGradient = (ctx, startX, startY, endX, endY, colorStops) => {
   let lg = ctx.createLinearGradient(startX, startY, endX, endY);
@@ -26,7 +32,7 @@ const getLinearGradient = (ctx, startX, startY, endX, endY, colorStops) => {
 
 const degreesToRadians = (degrees) => {
   let pi = Math.PI;
-  return degrees * (pi/180);
+  return degrees * (pi / 180);
 }
 
 
@@ -50,6 +56,7 @@ export {
   getLinearGradient,
   goFullscreen,
   getRandom,
-  degreesToRadians
+  degreesToRadians,
+  getRandomNeon
 
 };

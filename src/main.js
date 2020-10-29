@@ -10,6 +10,7 @@ import * as audio from './audio.js';
 import * as utils from './utils.js';
 import * as canvas from './canvas.js';
 
+
 // 1 - here we are faking an enumeration
 const DEFAULTS = Object.freeze({
     sound1: "media/Shelter.mp3"
@@ -21,8 +22,7 @@ let drawParams = {
     showCircles: true,
     showNoise: false,
     showInvert: false,
-    showPulse: false,
-    showBalls: false
+    showBalls: true
 };
 
 let mouse = {
@@ -87,6 +87,18 @@ function setupUI(canvasElement) {
     //set value of label to math initial value of slider
     volumeSlider.dispatchEvent(new Event("input"));
 
+    let lowpassSlider = document.querySelector("#lowpassSlider");
+    let lowpassLabel = document.querySelector("#lowpassLabel");
+
+    lowpassSlider.oninput = e => {
+        //set the lowpass
+        audio.setlowpass(Math.round((e.target.value / 2 * 100)));
+        //update value of label to math vallue of slider
+        lowpassLabel.innerHTML = Math.round((e.target.value / 2 * 100));
+    }
+
+    lowpassSlider.dispatchEvent(new Event("input"));
+
     //d - hook up the track change
     let trackSelect = document.querySelector("#trackSelect");
     //add .onchange event to <select>
@@ -102,10 +114,12 @@ function setupUI(canvasElement) {
     document.querySelector('#gradientCB').checked = drawParams.showGradient;
     document.querySelector('#barsCB').checked = drawParams.showBars;
     document.querySelector('#circlesCB').checked = drawParams.showCircles;
+    document.querySelector('#ballsCB').checked = drawParams.showBalls;
+
     document.querySelector('#noiseCB').checked = drawParams.showNoise;
     document.querySelector('#invertCB').checked = drawParams.showInvert;
-    document.querySelector('#pulseCB').checked = drawParams.showPulse;
-    document.querySelector('#ballsCB').checked = drawParams.showCrazy;
+   
+    
 
     document.querySelector('#gradientCB').onchange = e => {
         drawParams.showGradient = e.target.checked;
@@ -127,10 +141,6 @@ function setupUI(canvasElement) {
         drawParams.showInvert = e.target.checked;
     }
 
-    document.querySelector('#pulseCB').onchange = e => {
-        drawParams.showPulse = e.target.checked;
-    }
-
     document.querySelector('#ballsCB').onchange = e => {
         drawParams.showBalls = e.target.checked;
     }
@@ -142,6 +152,9 @@ function setupUI(canvasElement) {
         }
     )
 
+    //making guify
+
+    
 
 } // end setupUI
 
@@ -149,8 +162,6 @@ function loop() {
     requestAnimationFrame(loop);
     
     canvas.draw(drawParams,mouse);
-
-
 
 }
 

@@ -8,21 +8,61 @@
 */
 
 import {
-    audioCtx
+    audioCtx, duration, time, element
 } from './audio.js';
 import * as utils from './utils.js';
 import * as main from './main.js';
 
 let ctx, canvasWidth, canvasHeight, gradient, analyserNode, audioData;
 
+
+
 class Ball {
-    constructor(startX, startY, color, radius, dy, dx) {
-        this.startX = startX;
-        this.startY = startY;
+    constructor(x, y, color, size, directionY, directionX) {
+        this.x = x;
+        this.y = y;
         this.color = color;
-        this.radius = radius;
-        this.dy = dy;
-        this.dx = dx;
+        this.size = size;
+        this.directionY = directionY;
+        this.directionX = directionX;
+    }
+    draw() {
+        ctx.save()
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+    update(){
+        if(this.x > canvasWidth || this.x < 0){
+            this.directionX = -this.directionX;
+        }
+        if(this.y > canvasHeight || this.y < 0){
+            this.directionY = -this.directionY;
+        }
+        let dx = main.mouse.x - this.x;
+        let dy = main.mouse.y - this.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < main.mouse.radius + this.size){
+            if(main.mouse.x < this.x && this.x < canvasWidth - this.size * 10){
+                this.x += 10;
+            }
+            if(main.mouse.x > this.x && this.x > this.size * 10){
+                this.x -= 10;
+            }
+            if(main.mouse.y < this.y && this.y < canvasHeight - this.size * 10){
+                this.y += 10;
+            }
+            if(main.mouse.y > this.y && this.y > this.size * 10){
+                this.y -= 10;
+            }
+        }
+        this.x += this.directionX;
+        this.y += this.directionY;
+
+        this.draw();
     }
 }
 
@@ -36,10 +76,12 @@ class Particle {
         this.color = color;
     }
     draw() { //draw the particle
+        ctx.save();
         ctx.beginPath();
+        ctx.fillStyle = this.color;
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, true);
-        ctx.fillStyle = "#59F9B5";
         ctx.fill();
+        ctx.restore();
     }
     update() { //check if the mouse is hitting the particle
         if(this.x > canvasWidth || this.x < 0){
@@ -80,19 +122,17 @@ let madeParticle = true;
 
 //customizeable variables
 let ballCount = 30;
-let pulseTime = 2500;
 let numofparticles = 100;
 
 
 //declaring variables for my moving stuff
 let balls = [];
 let spawnBallsYet = false;
-let pulseCount = 0;
-let pulseFirstTime = true;
+
 
 //variables for the bar circle
 let degrees = 0;
-let increase = 1;
+let increase = .5;
 
 
 function setupCanvas(canvasElement, analyserNodeRef) {
@@ -130,9 +170,23 @@ function draw(params = {}, mouse = {}) {
     // OR
     //analyserNode.getByteTimeDomainData(audioData); // waveform data
 
+    // console.log(element.duration);
+    // console.log(element.currentTime);
+
+    //drawing the duration bar
+    ctx.save();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0,canvasHeight - 10, canvasWidth, 20);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,canvasHeight - 10, element.currentTime * canvasWidth / element.duration, 20);
+    ctx.restore();
+
+    
+
+
     // 2 - draw background
     ctx.save();
-    ctx.fillstyle = "white";
+    ctx.fillStyle = "#FFFFFF";
     ctx.globalAlpha = 0.1;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.restore();
@@ -145,19 +199,8 @@ function draw(params = {}, mouse = {}) {
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
         ctx.restore();
+        
     }
-
-    // if(params.showBars) {
-    //     let barSpacing = 4,
-    //         barWidth = canvasWidth / 20,
-    //         barHeight = 350,
-    //         degrees = 0;
-
-    //     for(let i = 0; i < audioData.length; i ++){
-
-    //     }
-
-    // }
 
     // 4 - draw bars
     if (params.showBars) {
@@ -169,41 +212,44 @@ function draw(params = {}, mouse = {}) {
         let topSpacing = 75;
         let radius = 100;
 
+        let radians = utils.degreesToRadians(degrees);
+        degrees += increase;
+        if (degrees === 360) {
+            degrees = 0;
+        }
+
+        let circleX = canvasWidth / 2 + radius * Math.cos(radians);
+        let circleY = canvasHeight / 2 + radius * Math.sin(radians);
+        
+        
 
         ctx.save();
 
         //loop through the data and draw
         for (let i = 0; i < audioData.length; i++) {
+            
 
             if (i % 2 === 0) {
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.strokeStyle = `rgba(255,100,255,0.5)`;
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.strokeStyle = `rgba(255,100,255,0.3)`;
             } else {
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.strokeStyle = `rgba(0, 126, 255, 0.5)`;
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.strokeStyle = `rgba(0, 126, 255, 0.3)`;
             }
 
-
-            let radians = utils.degreesToRadians(degrees);
-            degrees += increase;
-            if (degrees === 360) {
-                degrees = 0;
-            }
-
-            let circleX = canvasWidth / 2 + radius * Math.cos(radians);
-            let circleY = canvasHeight / 2 + radius * Math.sin(radians);
             // ctx.beginPath();
             // ctx.arc(circleX, circleY, 2,0,Math.PI*2,true);
             // ctx.fill();
-            // ctx.closePath();
+            // ctx.closePath(); 
 
+            ctx.fillRect(circleX, circleY, barWidth + 10, audioData[i]);
+            ctx.strokeRect(circleX, circleY, barWidth + 10, audioData[i]);
 
-
-            ctx.fillRect(circleX, circleY, barWidth, audioData[i]);
-            ctx.strokeRect(circleX, circleY, barWidth, audioData[i]);
             ctx.translate(canvasWidth / 2, canvasHeight / 2);
-            ctx.rotate(Math.PI / 4);
+            ctx.rotate(Math.PI/30);
             ctx.translate(-canvasWidth / 2, -canvasHeight / 2);
+
+            //console.log(audioData[i]);
 
 
             // ctx.fillRect(margin + i * (barWidth + barSpacing), 0, barWidth, audioData[i]);
@@ -215,14 +261,8 @@ function draw(params = {}, mouse = {}) {
 
     if (params.showPulse) {
 
-        // let i;
-        // ctx.save();
-        // for (i = 0; i < audioData.length; i++) {
-            
-        // }
+        
 
-
-        // ctx.restore();
     }
 
     // // 5 - draw circles
@@ -236,7 +276,8 @@ function draw(params = {}, mouse = {}) {
                 let y = utils.getRandom(0, canvasHeight -10);
                 let directionX = utils.getRandom(0,2.5);
                 let directionY = utils.getRandom(0,2.5);
-                let color = "#59F9B5"
+                let color = "#00ff9d";
+                
 
                 particles.push(new Particle(x,y,directionX,directionY,size,color));
             }
@@ -253,11 +294,13 @@ function draw(params = {}, mouse = {}) {
             for(let b = 0; b < particles.length; b++){
                 let dist = (Math.pow((particles[a].x - particles[b].x),2)) + (Math.pow((particles[a].y - particles[b].y),2));
                 if(dist < (canvasWidth / 7 * canvasHeight/7)) {
-                    ctx.strokeStyle = "rgba(55,186,130,1)";
+                    ctx.save();
+                    ctx.strokeStyle = "#00ff9d"
                     ctx.beginPath();
                     ctx.moveTo(particles[a].x, particles[a].y);
                     ctx.lineTo(particles[b].x, particles[b].y);
                     ctx.stroke();
+                    ctx.restore();
                 }
             }
         }
@@ -284,7 +327,7 @@ function draw(params = {}, mouse = {}) {
     for (let i = 0; i < length; i += 4) {
         // C) randomly change every 20th pixel to red
 
-        if (params.showNoise && Math.random() < 0.2) {
+        if (params.showNoise && Math.random() < 0.05) {
             // data[i] is the red channel
             // data[i+1] is the green channel
             // data[i+2] is the blue channel
@@ -298,6 +341,7 @@ function draw(params = {}, mouse = {}) {
         } // end if
 
         if (params.showInvert) {
+
             let red = data[i],
                 green = data[i + 1],
                 blue = data[i + 2];
@@ -308,15 +352,7 @@ function draw(params = {}, mouse = {}) {
         }
     } // end for
 
-    // if (params.showEmboss) {
-    //     console.log("inside showemboss");
-    //     for (let i = 0; i < length; i++) {
-    //         if (i % 4 == 3) continue; 
-    //         else{data[i] = 127 + 2 * data[i] - data[i + 4] - data[i + width * 4]};
-    //     }
-    // }
-
-    // ctx.putImageData(imageData, 0, 0);
+    ctx.putImageData(imageData, 0, 0);
 
     // D) copy image data back to canvas
 
@@ -325,32 +361,15 @@ function draw(params = {}, mouse = {}) {
 
         if (!spawnBallsYet) {
             for (let i = 0; i < ballCount; i++) {
-                let ball = new Ball(utils.getRandom(0, canvasWidth), utils.getRandom(0, canvasHeight), utils.getRandomColor(), utils.getRandom(5, 20), utils.getRandom(-30, 30), utils.getRandom(-30, 30));
+                let ball = new Ball(utils.getRandom(0, canvasWidth), utils.getRandom(0, canvasHeight), utils.getRandomNeon(), utils.getRandom(5, 20), utils.getRandom(-1, 1), utils.getRandom(-1, 1));
                 balls.push(ball);
             }
             spawnBallsYet = true;
         }
 
-
         for (let i = 0; i < balls.length; i++) {
 
-            ctx.save();
-            ctx.beginPath();
-
-            let ball = balls[i];
-
-            ball.startX = ball.startX + ball.dx;
-            ball.startY = ball.startY + ball.dy;
-
-            ctx.fillStyle = ball.color;
-            ctx.arc(ball.startX, ball.startY, ball.radius, 0, Math.PI * 2, true);
-
-            if (ball.startX < 0 || ball.startX > canvasWidth) ball.dx = -ball.dx;
-            if (ball.startY < 0 || ball.startY > canvasHeight) ball.dy = -ball.dy;
-
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
+            balls[i].update();
 
         }
     }
