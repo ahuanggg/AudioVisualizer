@@ -1,58 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Audio Visualizer</title>
+		<link href="styles/default-styles.css" type="text/css" rel="stylesheet" />
+		<script src="./src/loader.js" type="module"></script>
+	</head>
 
-<head>
-	<meta charset="utf-8" />
-	<title>Audio Visualizer</title>
-	<link href="styles/default-styles.css" type="text/css" rel="stylesheet" />
-	<script src="./src/loader.js" type="module"></script>
-	
-</head>
+	<body>
+		<main>
+			<canvas width="1000" height="600"></canvas>
+			<div id="controls">
+				<section>
+					<button id="playButton" data-playing="no"></button>
+					<button id="fsButton">Full Screen</button>
+					<br /><br />
+					<label
+						>Track: &nbsp;&nbsp;
+						<select id="trackSelect">
+							<option value="media/Shelter.mp3" selected>Shelter by Porter Robinson</option>
+							<option value="media/Peanuts Theme.mp3">Peanuts Theme</option>
+							<option value="media/The Picard Song.mp3">The Picard Song</option>
+						</select>
+					</label>
+				</section>
 
-<body>
-	<main>
-		<canvas width="1000" height="600"></canvas>
-		<div id="controls">
-			<section>
-				<button id="playButton" data-playing="no"></button>
-				<button id="fsButton">Full Screen</button>
-				<br><br>
-				<label>Track: &nbsp;&nbsp;
-					<select id="trackSelect">
-						<option value="media/Shelter.mp3" selected>Shelter by Porter Robinson</option>
-					
-						<option value="media/Peanuts Theme.mp3">Peanuts Theme</option>
-						<option value="media/The Picard Song.mp3">The Picard Song</option>
-					</select>
-				</label>
-			</section>
+				<section>
+					Volume: <input type="range" id="volumeSlider" min="0" max="2" value="1" step="0.01" />
+					<span id="volumeLabel">???</span>
+				</section>
+				<section>
+					Lowpass: <input type="range" id="lowpassSlider" min="5" max="20" value="10" step="0.01" />
+					<span id="lowpassLabel">???</span>
+				</section>
 
-			<section>
-				Volume: <input type="range" id="volumeSlider" min="0" max="2" value="1" step="0.01">
-				<span id="volumeLabel">???</span>
-			</section>
-			<section>
-				Lowpass: <input type="range" id="lowpassSlider" min="5" max="20" value="10" step="0.01">
-				<span id="lowpassLabel">???</span>
-			</section>
+				<section>
+					Balls: <input type="range" id="numBalls" min="1" max="50" value="10" step="0.01" />
+					<span id="numBallsLabel">???</span>
+				</section>
 
+				<section>
+					Particles: <input type="range" id="numParticles" min="1" max="200" value="10" step="0.1" />
+					<span id="numParticlesLabel">???</span>
+				</section>
 
-			<section>
-				<span><input type="checkbox" id="gradientCB"><label for="gradientCB">Show Gradient</label></span>&nbsp;&nbsp;
-				<span><input type="checkbox" id="barsCB"><label for="barsCB">Show Bars</label></span><br><br>
-				<span><input type="checkbox" id="circlesCB"><label for="circlesCB">Show Circles</label></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<span><input type="checkbox" id="ballsCB"><label for="ballsCB">Show balls!</label></span><br><br>
-				<!-- we'll use this 4th checkbox soon! -->
-				<span><input type="checkbox" id="noiseCB"><label for="noiseCB">Show Noise</label></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<span><input type="checkbox" id="invertCB"><label for="invertCB">Invert Colors</label></span>
-			
-				
-
-			</section>
-		</div>
-
-	
-	</main>
-</body>
-
+				<section>
+					<span><input type="checkbox" id="gradientCB" /><label for="gradientCB">Show Gradient</label></span
+					>&nbsp;&nbsp; <span><input type="checkbox" id="barsCB" /><label for="barsCB">Show Bars</label></span
+					><br /><br />
+					<span><input type="checkbox" id="circlesCB" /><label for="circlesCB">Show Circles</label></span
+					>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span><input type="checkbox" id="ballsCB" /><label for="ballsCB">Show balls!</label></span
+					><br /><br />
+					<!-- we'll use this 4th checkbox soon! -->
+					<span><input type="checkbox" id="noiseCB" /><label for="noiseCB">Show Noise</label></span
+					>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span><input type="checkbox" id="invertCB" /><label for="invertCB">Invert Colors</label></span>
+				</section>
+			</div>
+		</main>
+	</body>
 </html>

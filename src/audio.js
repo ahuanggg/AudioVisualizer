@@ -1,103 +1,76 @@
-// 1 - our WebAudio context, **we will export and make this public at the bottom of the file**
 let audioCtx;
-
-// **These are "private" properties - these will NOT be visible outside of this module (i.e. file)**
-// 2 - WebAudio nodes that are part of our WebAudio audio routing graph
 let element, sourceNode, analyserNode, gainNode, filter, duration, time;
 
-// 3 - here we are faking an enumeration
+// DEFAULTS enum
 const DEFAULTS = Object.freeze({
-    gain: .5,
-    numSamples: 256,
-    lowpass: 800
+	gain: 0.5,
+	numSamples: 256,
+	lowpass: 800,
 });
 
-// 4 - create a new array of 8-bit integers (0-255)
-// this is a typed array to hold the audio frequency data
+// array to hold audio freq data (0-255)
 let audioData = new Uint8Array(DEFAULTS.numSamples / 2);
 
-// **Next are "public" methods - we are going to export all of these at the bottom of this file**
+// function to set up web audio by setting default values and connecting audio nodes
+// takes in a filepath of a .mp3 file to read
 function setupWebaudio(filePath) {
-    // 1 - The || is because WebAudio has not been standardized across browsers yet
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext();
+	const AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    // 2 - this creates an <audio> element
-    element = new Audio();
+	audioCtx = new AudioContext();
+	element = new Audio();
 
-    duration = element.duration;
-    time = element.currentTime;
-    
-    // 3 - have it point at a sound file
-    loadSoundFile(filePath);
+	duration = element.duration;
+	time = element.currentTime;
 
-    // 4 - create an a source node that points at the <audio> element
-    sourceNode = audioCtx.createMediaElementSource(element);
+	loadSoundFile(filePath);
 
-    // 5 - create an analyser node
-    analyserNode = audioCtx.createAnalyser(); // note the UK spelling of "Analyser"
+	sourceNode = audioCtx.createMediaElementSource(element);
+	analyserNode = audioCtx.createAnalyser();
 
-    /*
-    // 6
-    We will request DEFAULTS.numSamples number of samples or "bins" spaced equally 
-    across the sound spectrum.
+	// fft stands for Fast Fourier Transform
+	analyserNode.fftSize = DEFAULTS.numSamples;
 
-    If DEFAULTS.numSamples (fftSize) is 256, then the first bin is 0 Hz, the second is 172 Hz, 
-    the third is 344Hz, and so on. Each bin contains a number between 0-255 representing 
-    the amplitude of that frequency.
-    */
+	filter = audioCtx.createBiquadFilter();
+	filter.type = 'lowpass';
+	filter.frequency.value = DEFAULTS.lowpass;
 
-    // fft stands for Fast Fourier Transform
-    analyserNode.fftSize = DEFAULTS.numSamples;
+	// create a gain (volume) node
+	gainNode = audioCtx.createGain();
+	gainNode.gain.value = DEFAULTS.gain;
 
-    filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = DEFAULTS.lowpass;
-    
-
-    // 7 - create a gain (volume) node
-    gainNode = audioCtx.createGain();
-    gainNode.gain.value = DEFAULTS.gain;
-
-    // 8 - connect the nodes - we now have an audio graph
-    sourceNode.connect(filter);
-    filter.connect(analyserNode);
-    analyserNode.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+	// connect the nodes to make an audio graph
+	sourceNode.connect(filter);
+	filter.connect(analyserNode);
+	analyserNode.connect(gainNode);
+	gainNode.connect(audioCtx.destination);
 }
 
+// function to load sound file from the param filePath
 function loadSoundFile(filePath) {
-    element.src = filePath;
+	element.src = filePath;
 }
 
+// function to play the current sound when the play button is pressed
 function playCurrentSound() {
-    element.play();
+	element.play();
 }
 
+// function to pause the current sound when the pause button is pressed
 function pauseCurrentSound() {
-    element.pause();
+	element.pause();
 }
 
+// function to set the volume of the sound when the silder is being changed
 function setVolume(value) {
-    value = Number(value); // make sure that it's a Number rather than a String
-    gainNode.gain.value = value;
+	value = Number(value); // make sure that it's a Number rather than a String
+	gainNode.gain.value = value;
 }
 
+// function to set the lowpass of the sound when the slider is being changed
 function setlowpass(value) {
-    value = Number(value);
-    filter.frequency.value = value;
+	value = Number(value);
+	filter.frequency.value = value;
 }
 
-export {
-    audioCtx,
-    setupWebaudio,
-    playCurrentSound,
-    pauseCurrentSound,
-    loadSoundFile,
-    setVolume,
-    setlowpass,
-    analyserNode,
-    duration,
-    time,
-    element
-};
+// exporting fucntions to use
+export { audioCtx, setupWebaudio, playCurrentSound, pauseCurrentSound, loadSoundFile, setVolume, setlowpass, analyserNode, duration, time, element };

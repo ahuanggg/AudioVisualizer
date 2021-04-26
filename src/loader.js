@@ -1,8 +1,7 @@
-import * as main from "./main.js";
+import * as main from './main.js';
 window.onload = () => {
-	console.log("window.onload called");
-	// 1 - do preload here - load fonts, images, additional sounds, etc...
+	console.log('window.onload called');
 
-	// 2 - start up app
+	// start up app
 	main.init();
-}
+};
